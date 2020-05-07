@@ -6,14 +6,13 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npx tsc main.ts && npm run minify",
-    "minify": "jsmin -o kuririn.min.js main.js"
+    "minify": "uglifyjs main.js --compress --mangle -o kuririn.min.js"
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "typescript": "^3.8.3"
-  },
   "devDependencies": {
-    "jsmin": "^1.0.1"
+    "jsmin": "^1.0.1",
+    "uglify-js": "^3.9.2",
+    "typescript": "^3.8.3"
   }
 }
