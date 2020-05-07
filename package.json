@@ -1,0 +1,19 @@
+{
+  "name": "crh-kuririn",
+  "version": "1.0.0",
+  "description": "前端业务跟踪错误上报注入",
+  "main": "main.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npx tsc main.ts --lib dom,es5,es6 && npm run minify",
+    "minify": "jsmin -o kuririn.min.js main.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "typescript": "^3.8.3"
+  },
+  "devDependencies": {
+    "jsmin": "^1.0.1"
+  }
+}
