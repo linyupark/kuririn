@@ -5,7 +5,7 @@
   "main": "main.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "npx tsc main.ts --lib dom,es5,es6 && npm run minify",
+    "build": "npx tsc main.ts && npm run minify",
     "minify": "jsmin -o kuririn.min.js main.js"
   },
   "author": "",
