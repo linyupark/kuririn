@@ -4,15 +4,15 @@
   "description": "前端业务跟踪错误上报注入",
   "main": "main.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "npx tsc main.ts && npm run minify",
-    "minify": "uglifyjs main.js --compress --mangle -o kuririn.min.js"
+    "build": "npx rollup -c"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "jsmin": "^1.0.1",
-    "uglify-js": "^3.9.2",
+    "@rollup/plugin-typescript": "^4.1.1",
+    "rollup": "^2.8.2",
+    "rollup-plugin-uglify": "^6.0.4",
+    "tslib": "^1.11.2",
     "typescript": "^3.8.3"
   }
 }
