@@ -217,7 +217,7 @@ const Main = class {
                 ) {
                   // 匹配规则接口上报
                   root.func_report({
-                    type: `ERROR_XHR_${field.toUpperCase()}_${fieldValueStr.toUpperCase()}`,
+                    type: `MATCH_API_${field.toUpperCase()}_${fieldValueStr.toUpperCase()}`,
                     error: reportData,
                   })
                 }
@@ -226,7 +226,7 @@ const Main = class {
               // 解析错误单独上报
               reportData.res = `**非JSON数据**: ${reportData.res}`
               root.func_report({
-                type: 'ERROR_XHR_RESPONSE_PARSE',
+                type: 'ERROR_API_RESPONSE_PARSE',
                 error: reportData,
               })
             }
