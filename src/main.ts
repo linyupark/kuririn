@@ -125,8 +125,8 @@ const Main = class {
   /**
    * 处理全局错误
    */
-  protected async func_onError(event: ErrorEvent) {
-    this.func_report(await handleWinError(event))
+  protected func_onError(event: ErrorEvent) {
+    handleWinError(event).then(data => this.func_report(data))
     return false
   }
 
