@@ -3,6 +3,46 @@
 ### Changelog
  * 2020-5-8 初版，+mod_performance +mod_logicTracker +mod_error +mod_userinfo 目前实现4个模块
 
+----
+
+### 模块说明
+
+#### `mod_error` 捕获全局js错误，并尽可能将错误相关信息上报
+```js
+{
+  type: 'ERROR_JS',
+  error: {
+    filename, // 出错文件或页面地址
+    lineno, // 第几行，捕捉不到则显示0
+    colno, // 第几列
+    message, // 出错消息
+    // ... 未来可继续添加
+  },
+  // 其他模块数据
+}
+```
+
+#### `mod_mod_logicTracker` 默认开启，设定需要捕获的本地数据粘附到每个api请求链接地址中
+
+通过设置 injectAPI配置的函数回调来获取数据，
+比如在用户登录后获取session中的user_id数据粘附到每次ajax请求中
+
+```js
+injectAPI: function() {
+  return sessionStorage.getItem('user_id')
+}
+```
+
+
+#### `mod_userinfo` 用户设备数据
+
+每当页面历史记录发生变化（包括载入跟hash变动）会生成一份用户设备相关的数据，在每次上报的时候带入
+
+#### `mod_performance` 性能指标（可选，待完善）
+
+可选择在首次进入或切换页面生成一份页面渲染以及网络相关的性能数据上报
+
+----
 
 ### API
 
