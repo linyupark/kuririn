@@ -88,3 +88,8 @@ interface IUserinfo {
   })
 </script>
 ```
+
+#### CDN
+
+https://cdn.jsdelivr.net/npm/@lpjs/kuririn/dist/kuririn.min.js
+https://unpkg.com/@lpjs/kuririn/dist/kuririn.min.js

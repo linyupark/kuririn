@@ -1,13 +1,17 @@
 {
-  "name": "crh-kuririn",
+  "name": "@lpjs/kuririn",
   "version": "1.0.0",
   "description": "前端业务跟踪错误上报注入",
   "main": "main.ts",
+  "keywords": ["Kuririn", "Analyzer"],
   "scripts": {
     "build": "npx rollup -c"
   },
-  "author": "",
-  "license": "ISC",
+  "repository": {
+    "url": "https://github.com/linyupark/kuririn"
+  },
+  "author": "linyupark@gmail.com",
+  "license": "MIT",
   "devDependencies": {
     "@rollup/plugin-typescript": "^4.1.1",
     "rollup": "^2.8.2",
