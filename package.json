@@ -2,7 +2,7 @@
   "name": "@lpjs/kuririn",
   "version": "1.0.0",
   "description": "前端业务跟踪错误上报注入",
-  "main": "main.ts",
+  "main": "src/main.ts",
   "keywords": ["Kuririn", "Analyzer"],
   "scripts": {
     "build": "npx rollup -c"
