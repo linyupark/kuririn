@@ -1,16 +1,44 @@
 ## 地表最强(简化)前端业务跟踪错误上报注入
 ----
 ### Changelog
+ * 2020-5-9 参考国金参数，路由更改后扫描页面元素上报自定义动作、事件
  * 2020-5-8 初版，+mod_performance +mod_logicTracker +mod_error +mod_userinfo 目前实现4个模块
 
 ----
 
 ### 模块说明
 
-#### `mod_error` 捕获全局js错误，并尽可能将错误相关信息上报
+#### `mod_actionEvent` 
+
+行为事件，当路由变化后扫描元素属性 
+ * krin-eid （事件id）
+ * krin-ename （事件名称）
+
+```html
+<!-- 举例一个下载链接点击的上报 -->
+<a href='下载' krin-eid='503021' krin-ename='download'>下载App</a>
+```
+
+```js
+// 举例点击后会上报的数据结构
+{
+  type: 'action',
+  event: {
+    id: '503021',
+    name: 'download'
+  }，
+  // 其他 userinfo 等其他模块数据
+}
+```
+
+#### `mod_error` 
+
+捕获全局js错误，并尽可能将错误相关信息上报
+
 ```js
 {
-  type: 'ERROR_JS',
+  type: 'error',
+  reason: 'js file',
   error: {
     filename, // 出错文件或页面地址
     lineno, // 第几行，捕捉不到则显示0
@@ -22,7 +50,9 @@
 }
 ```
 
-#### `mod_mod_logicTracker` 默认开启，设定需要捕获的本地数据粘附到每个api请求链接地址中
+#### `mod_mod_logicTracker` 
+
+默认开启，设定需要捕获的本地数据粘附到每个api请求链接地址中
 
 通过设置 injectAPI配置的函数回调来获取数据，
 比如在用户登录后获取session中的user_id数据粘附到每次ajax请求中

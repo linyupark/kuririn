@@ -1,3 +1,5 @@
+import { REPORT_TYPES } from '../constant'
+
 /**
  * 全局异常处理 window.onerror
  * @param event 
@@ -16,7 +18,8 @@ export default function(event: ErrorEvent) {
         data.message = event.error.stack.toString();
       }
       resolve({
-        type: 'ERROR_JS',
+        type: REPORT_TYPES.ERR,
+        reason: 'js file',
         error: data
       })
     }, 10)

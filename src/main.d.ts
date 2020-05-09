@@ -16,6 +16,7 @@ interface IUserinfo {
   title?: string; // 页面标题
   agent?: string; // useragent
   platform?: string; // 设备平台
+  [propName: string]: any; // 额外自定义数据
 }
 
-type TModule = "error" | "userinfo" | "performance";
+type TModule = "error" | "userinfo" | "performance" | "action";

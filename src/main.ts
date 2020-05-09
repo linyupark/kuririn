@@ -7,10 +7,15 @@ import handleWinError from './funcs/handleWinError'
 import updateUserinfo from './funcs/updateUserinfo'
 import updatePerformance from './funcs/updatePerformance'
 
+import { REPORT_TYPES } from './constant'
+
+// 是否可以检测重写 popstate
+const hasPopState = 'onpopstate' in window
+
 /**
  * 全部可用功能
  */
-const Modules: TModule[] = ['error', 'userinfo', 'performance']
+const Modules: TModule[] = ['error', 'userinfo', 'performance', 'action']
 
 /**
  * 工具函数
@@ -23,6 +28,10 @@ const Utils = { qs, resetHistory }
  * @param overrideUserinfo 覆盖用户信息
  */
 const Main = class {
+
+  // 存放一些临时数据比如计时器
+  private _actionTimer: any
+
   debug: boolean = false
 
   /**
@@ -34,7 +43,7 @@ const Main = class {
   /**
    * 启用功能
    */
-  modules: TModule[] = ['error', 'userinfo']
+  modules: TModule[] = ['error', 'userinfo', 'action']
 
   /**
    * 收集用户信息
@@ -44,8 +53,13 @@ const Main = class {
     history: [],
     title: '',
     agent: navigator.userAgent,
-    platform: navigator.platform,
+    platform: navigator.platform
   }
+
+  /**
+   * 收集性能信息
+   */
+  performance: object = {}
 
   /**
    * 上报地址
@@ -70,6 +84,35 @@ const Main = class {
    * @param params
    */
   constructor(params: IConstructor, overrideUserinfo?: IUserinfo) {
+
+    if (hasPopState) {
+      window.history.pushState = Utils.resetHistory('pushState')
+      window.history.replaceState = Utils.resetHistory('replaceState')
+      window.addEventListener(
+        'pushState',
+        this.func_onPopstate.bind(this),
+        false,
+      )
+      window.addEventListener(
+        'replaceState',
+        this.func_onPopstate.bind(this),
+        false,
+      )
+      window.addEventListener(
+        'popstate',
+        this.func_onPopstate.bind(this),
+        false,
+      )
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // 确保body节点存在，在任意dom变动下触发最后一次即可
+      document.body.addEventListener(
+        'DOMSubtreeModified',
+        this.func_actionAddEventListener.bind(this)
+      )
+    })
+
     this.appId = params.appId
     this.appName = params.appName
 
@@ -135,7 +178,37 @@ const Main = class {
    * @param event
    */
   protected func_onPopstate(event) {
-    this.userinfo = updateUserinfo(event.type, this.userinfo)
+    if (~this.modules.indexOf('userinfo')) {
+      this.userinfo = updateUserinfo(event.type, this.userinfo)
+    }
+    if (~this.modules.indexOf('performance')) {
+      this.performance = updatePerformance()
+    }
+    if (~this.modules.indexOf('action')) {
+
+    }
+    this.func_log('kuririn debug:', { ...this, injectAPI: this.injectAPI() })
+  }
+
+  /** 设置动作捕捉 */
+  protected func_actionAddEventListener() {
+    if (this._actionTimer) {
+      clearTimeout(this._actionTimer)
+    }
+    this._actionTimer = setTimeout(() => {
+      const actions: NodeList = document.querySelectorAll('[krin-eid]')
+      Array.prototype.forEach.call(actions, action => {
+        action.addEventListener('click', () => {
+          this.func_report({
+            type: REPORT_TYPES.ACTION,
+            event: {
+              id: action.getAttribute('krin-eid'),
+              name: action.getAttribute('krin-ename')
+            }
+          })
+        })
+      })
+    }, 100)
   }
 
   /**
@@ -147,7 +220,6 @@ const Main = class {
       appId: this.appId,
       appName: this.appName,
       userinfo: this.userinfo,
-      injectData: this.injectAPI(),
       ...params,
     }
     this.func_log('kuririn report:', reportData)
@@ -174,9 +246,8 @@ const Main = class {
       url = arguments[1]
       method = arguments[0]
 
-      // 如果是get请求需要此刻注入
+      // 非上报地址注入
       if (
-        method.toLowerCase() === 'get' &&
         url !== root.reportUrl &&
         injectDataQuery
       ) {
@@ -196,40 +267,42 @@ const Main = class {
         data: arguments[0] || {},
       }
       this.addEventListener('readystatechange', function () {
+        if (reportData.url === root.reportUrl) return
         if (this.readyState === 4) {
           reportData.res = this.response
           reportData.status = this.status
-          if (this.status >= 400 && reportData.url !== root.reportUrl) {
+          if (this.status >= 400) {
             // http status code 不正常的上报
-            root.func_report({
-              type: 'ERROR_XHR_STATUS',
+            return root.func_report({
+              type: REPORT_TYPES.ERR,
+              reason: 'xhr status >= 400',
               error: reportData,
             })
-          } else {
-            try {
-              const resJSON = JSON.parse(reportData.res)
-              Object.keys(root.matchAPI).map((field) => {
-                const values = root.matchAPI[field].map((v) => String(v))
-                const fieldValueStr = String(resJSON[field])
-                if (
-                  resJSON[field] &&
-                  values.indexOf(fieldValueStr) !== -1
-                ) {
-                  // 匹配规则接口上报
-                  root.func_report({
-                    type: `MATCH_XHR_${field.toUpperCase()}_${fieldValueStr.toUpperCase()}`,
-                    error: reportData,
-                  })
-                }
-              })
-            } catch (e) {
-              // 解析错误单独上报
-              reportData.res = `**非JSON数据**: ${reportData.res}`
-              root.func_report({
-                type: 'ERROR_XHR_RESPONSE_PARSE',
-                error: reportData,
-              })
-            }
+          }
+          try {
+            const resJSON = JSON.parse(reportData.res)
+            Object.keys(root.matchAPI).map((field) => {
+              const values = root.matchAPI[field].map((v) => String(v))
+              const fieldValueStr = String(resJSON[field])
+              if (
+                resJSON[field] &&
+                values.indexOf(fieldValueStr) !== -1
+              ) {
+                // 匹配规则接口上报
+                root.func_report({
+                  type: REPORT_TYPES.MATCH_RES,
+                  match: `${field}=${fieldValueStr}`,
+                  response: reportData,
+                })
+              }
+            })
+          } catch (e) {
+            // 解析错误单独上报
+            root.func_report({
+              type: REPORT_TYPES.ERR,
+              reason: 'xhr response json parse',
+              error: reportData,
+            })
           }
         }
       })
@@ -237,6 +310,8 @@ const Main = class {
         // 上报
         if (reportData.url === root.reportUrl) return
         root.func_report({
+          type: REPORT_TYPES.ERR,
+          reason: 'xhr send error',
           error: reportData,
         })
       })
@@ -247,11 +322,18 @@ const Main = class {
 
   /**
    * 模块：logicTracker
-   * 逻辑追踪
+   * 依附应用自身 api 上报
    */
   mod_logicTracker() {
-    this.func_log('kuririn: mod_logicTracker ----- on')
+    this.func_log('kuririn: mod_logicTracker')
     this.func_injectXHR()
+  }
+
+  /**
+   * 模块：行为事件捕捉上报
+   */
+  mod_action() {
+    this.func_log('kuririn: mod_action')
   }
 
   /**
@@ -267,43 +349,17 @@ const Main = class {
    * 获取用户相关信息
    */
   mod_userinfo() {
-    this.func_log('kuririn: mod_userinfo ----- on')
-
+    this.func_log('kuririn: mod_userinfo')
     // 基础用户数据
     this.userinfo.agent = navigator.userAgent
-
-    if (false === 'onpopstate' in window) return
-    window.history.pushState = Utils.resetHistory('pushState')
-    window.history.replaceState = Utils.resetHistory('replaceState')
-    window.addEventListener(
-      'pushState',
-      this.func_onPopstate.bind(this),
-      false,
-    )
-    window.addEventListener(
-      'replaceState',
-      this.func_onPopstate.bind(this),
-      false,
-    )
-    window.addEventListener(
-      'popstate',
-      this.func_onPopstate.bind(this),
-      false,
-    )
-
   }
 
   /**
    * 模块：性能
    */
   mod_performance() {
-    this.func_log('kuririn: mod_performance ----- on')
-
-    // 上报
-    this.func_report({
-      type: 'PERFORMANCE',
-      performance: updatePerformance(),
-    })
+    this.func_log('kuririn: mod_performance')
+    this.performance = updatePerformance()
   }
 }
 
