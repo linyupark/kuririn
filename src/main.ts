@@ -239,7 +239,7 @@ const Main = class {
     const injectData = this.injectAPI();
     const injectDataQuery =
       typeof injectData === "string"
-        ? Utils.qs({ data: injectData })
+        ? Utils.qs({ _krin_: injectData })
         : Utils.qs(this.injectAPI());
     const root = this;
     window.XMLHttpRequest.prototype.open = function () {

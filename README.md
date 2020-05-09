@@ -104,14 +104,14 @@ interface IUserinfo {
 ### 调用范例
 
 ```html
-<script src="http://api-s1.dynv6.net:9001/images/temp/kuririn.min.js?v=1.0.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@lpjs/kuririn/dist/kuririn.min.js"></script>
 <script>
   new Kuririn({
     appId: 'shop-hapc',
     appName: '华安积分商城',
     injectAPI: function() {
       const user_info = JSON.parse(sessionStorage.getItem('user_info') || '{}')
-      return user_info.regcust_id ? { regcust_id: user_info.regcust_id } : {}
+      return user_info.regcust_id
     },
     matchAPI: { error_no: [334064] },
     debug: true
@@ -122,4 +122,5 @@ interface IUserinfo {
 #### CDN
 
 https://cdn.jsdelivr.net/npm/@lpjs/kuririn/dist/kuririn.min.js
+
 https://unpkg.com/@lpjs/kuririn/dist/kuririn.min.js
