@@ -1,8 +1,8 @@
 ## 地表最强(简化)前端业务跟踪错误上报注入
 ----
 ### Changelog
- * 2020-5-9 参考国金参数，路由更改后扫描页面元素上报自定义动作、事件
- * 2020-5-8 初版，+mod_performance +mod_logicTracker +mod_error +mod_userinfo 目前实现4个模块
+ * [1.0.2] 参考国金参数，路由更改后扫描页面元素上报自定义动作、事件
+ * [1.0.0] 初版，+mod_performance +mod_logicTracker +mod_error +mod_userinfo 目前实现4个模块
 
 ----
 
@@ -106,16 +106,22 @@ interface IUserinfo {
 ```html
 <script src="https://cdn.jsdelivr.net/npm/@lpjs/kuririn/dist/kuririn.min.js"></script>
 <script>
-  new Kuririn({
+  window.KuririnInstance = new Kuririn({
     appId: 'shop-hapc',
     appName: '华安积分商城',
     injectAPI: function() {
-      const user_info = JSON.parse(sessionStorage.getItem('user_info') || '{}')
-      return user_info.regcust_id
+      return sessionStorage.getItem('user_info')
     },
     matchAPI: { error_no: [334064] },
     debug: true
+  }, {
+    // 自定义额外的userinfo信息
+    clientId: '客户唯一标识符',
+    deviceId: '设备号'
   })
+
+  // sdk或客户端覆盖数据
+  window.KuririnInstance.userinfo.time = Date.now()
 </script>
 ```
 
