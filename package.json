@@ -1,6 +1,6 @@
 {
   "name": "@lpjs/kuririn",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "前端业务跟踪错误上报注入",
   "main": "src/main.ts",
   "keywords": ["Kuririn", "Analyzer"],
